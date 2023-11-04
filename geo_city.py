@@ -52,5 +52,19 @@ def city2latlon(city, cursor = sqlite3.connect(db_path).cursor()):
 def latlon2city(latitude, longitude, cursor = sqlite3.connect(db_path).cursor()):
 	cityLatlon = lambda city: (float(city[4][1:-1]), float(city[5][1:-1]))
 	cityllSort = lambda cityll: cityll[1]
-	cities = cursor.execute("SELECT * FROM csv_table WHERE geo_hash LIKE '\"" + latlon2geohash(latitude, longitude)[0:3] + "%';").fetchall()
+	cities = []
+	for i in (3, 2, 1):
+		cities = cursor.execute("SELECT * FROM csv_table WHERE geo_hash LIKE '\"" + latlon2geohash(latitude, longitude)[0:i] + "%';").fetchall()
+		if len(cities):
+			break
 	return sorted([(city, latlon2distance(*cityLatlon(city), latitude, longitude)) for city in cities], key = cityllSort)[0][0][2][1:-1]
+
+def latlon2province(latitude, longitude, cursor = sqlite3.connect(db_path).cursor()):
+	provinceLatlon = lambda province: (float(province[4][1:-1]), float(province[5][1:-1]))
+	provincellSort = lambda provincell: provincell[1]
+	provinces = []
+	for i in (3, 2, 1):
+		provinces = cursor.execute("SELECT * FROM csv_table WHERE geo_hash LIKE '\"" + latlon2geohash(latitude, longitude)[0:i] + "%';").fetchall()
+		if len(provinces):
+			break
+	return sorted([(province, latlon2distance(*provinceLatlon(province), latitude, longitude)) for province in provinces], key = provincellSort)[0][0][3][1:-1]

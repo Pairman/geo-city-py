@@ -1,5 +1,8 @@
 from math import sin, cos, sqrt, atan2, radians
+import os
 import sqlite3
+
+db_path = os.path.dirname(__file__) + "/china_city_geo.db"
 
 # Get radian distance between two coordinates.
 def latlon2distance(latitude1, longitude1, latitude2, longitude2):
@@ -42,18 +45,12 @@ def latlon2geohash(latitude, longitude, precision = 12):
 
 	return geohash
 
-def city2latlon(city, cursor = sqlite3.connect("china_city_geo.db").cursor()):
+def city2latlon(city, cursor = sqlite3.connect(db_path).cursor()):
 	cities = cursor.execute("SELECT * FROM csv_table WHERE area LIKE '' and city LIKE '\"" + city + "%';").fetchall()
 	return float(cities[0][4][1:-1]), float(cities[0][5][1:-1])
 
-def latlon2city(latitude, longitude, cursor = sqlite3.connect("china_city_geo.db").cursor()):
+def latlon2city(latitude, longitude, cursor = sqlite3.connect(db_path).cursor()):
 	cityLatlon = lambda city: (float(city[4][1:-1]), float(city[5][1:-1]))
 	cityllSort = lambda cityll: cityll[1]
 	cities = cursor.execute("SELECT * FROM csv_table WHERE geo_hash LIKE '\"" + latlon2geohash(latitude, longitude)[0:3] + "%';").fetchall()
 	return sorted([(city, latlon2distance(*cityLatlon(city), latitude, longitude)) for city in cities], key = cityllSort)[0][0][2][1:-1]
-
-# city = latlon2city(39.910924547299565, 116.4133836971231)
-city = city2latlon("咸阳")
-print(city)
-
-
